@@ -21,34 +21,46 @@ json_t *json_state();
 
 #define T_DELAY 64
 
+double Uniform(void){
+    return ((double)rand()+1.0)/((double)RAND_MAX+2.0);
+}
+
+double rand_normal(double mu, double sigma) {
+    double z = sqrt(-2.0*log(Uniform())) * sin(2.0*M_PI*Uniform());
+    return mu + sigma*z;
+}
+
 void setup() {
     // Initialize the random generator
     while(get_voltage() == -1);
     rand_seed(rand_hard() + kilo_uid);
 
-    mydata->tumble_time = rand_soft();
-    mydata->run_time = rand_soft();
+    mydata->tumble_time = 255 + rand_normal(0, 1) * 32; // 2 secs
+    mydata->run_time = 255;
+    mydata->direction = rand_soft() % 2;
 }
 
 void loop() {
-    mydata->cycle = kilo_ticks%(mydata->tumble_time + mydata->run_time + T_DELAY);
+    mydata->cycle = kilo_ticks%(mydata->tumble_time + mydata->run_time);
     
-    if(mydata->cycle == 0) {
-         // tumble state
+    if (mydata->cycle == 0) {
+        kilo_ticks = 0;
+        mydata->tumble_time = 255 + rand_normal(0, 1) * 32; // 2 sec
+        mydata->run_time = 255;
+    } else if (mydata->cycle < mydata->tumble_time) {
+        // tumble state
         spinup_motors();
         set_color(RGB(3,0,0)); // red
-        if(rand_soft()%2)
+        if(mydata->direction)
             set_motors(kilo_turn_right, 0);
         else
             set_motors(0, kilo_turn_left);
-    } else if(mydata->cycle == mydata->tumble_time) {
+    } else if (mydata->cycle < mydata->tumble_time + mydata->run_time) {
         // run state
         spinup_motors();
         set_motors(kilo_straight_left, kilo_straight_right);
-        set_color(RGB(0,3,0)); // green
-    } else if(mydata->cycle == mydata->run_time) {
-        mydata->tumble_time = rand_soft();
-        mydata->run_time = rand_soft();
+        set_color(RGB(0,3,0)); // green        
+
     }
 }
 

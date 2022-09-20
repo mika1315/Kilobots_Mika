@@ -61,13 +61,10 @@ typedef struct {
 
     ext_t val;
 
-    // 
-    uint8_t keep_going;
     uint8_t cycle;
     uint16_t tumble_time;
     uint16_t run_time;
-    uint8_t flick;
-    uint8_t light;
+    uint8_t direction;
 
 } USERDATA;
 
