@@ -19,7 +19,10 @@ REGISTER_USERDATA(USERDATA)
 json_t *json_state();
 #endif
 
-#define T_DELAY 64
+// #define T_DELAY 64
+// uint16_t const t_t = 64;
+// uint16_t const t_r = ;
+uint8_t flag = 1;
 
 double Uniform(void){
     return ((double)rand()+1.0)/((double)RAND_MAX+2.0);
@@ -35,18 +38,19 @@ void setup() {
     while(get_voltage() == -1);
     rand_seed(rand_hard() + kilo_uid);
 
-    mydata->tumble_time = 255 + rand_normal(0, 1) * 32; // 2 secs
-    mydata->run_time = 255;
+    mydata->tumble_time = 32; // 255 + rand_normal(0, 1) * 32; // 2 secs
+    mydata->run_time = 32; // 255;
     mydata->direction = rand_soft() % 2;
 }
 
 void loop() {
     mydata->cycle = kilo_ticks%(mydata->tumble_time + mydata->run_time);
     
-    if (mydata->cycle == 0) {
-        kilo_ticks = 0;
-        mydata->tumble_time = 255 + rand_normal(0, 1) * 32; // 2 sec
-        mydata->run_time = 255;
+    if (flag == 0) {
+        mydata->tumble_time = 64; // 255 + rand_normal(0, 1) * 32; // 2 sec
+        mydata->run_time = 32; // 255;
+        mydata->direction = rand_soft() % 2;
+        flag = 1;
     } else if (mydata->cycle < mydata->tumble_time) {
         // tumble state
         spinup_motors();
@@ -59,9 +63,10 @@ void loop() {
         // run state
         spinup_motors();
         set_motors(kilo_straight_left, kilo_straight_right);
-        set_color(RGB(0,3,0)); // green        
-
+        set_color(RGB(0,3,0)); // green
+        flag = 0;
     }
+
 }
 
 int main(void) {
