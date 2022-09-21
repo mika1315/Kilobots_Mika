@@ -65,6 +65,7 @@ typedef struct {
     uint16_t tumble_time;
     uint16_t run_time;
     uint8_t direction;
+    uint8_t prob;
 
 } USERDATA;
 
