@@ -25,6 +25,7 @@ json_t *json_state();
 uint8_t flag = 1;
 uint8_t lower_tumble_time = 0;
 uint8_t upper_tumble_time = 4 * 32;
+uint8_t check_lastcycle = 0;
 
 float Uniform(void){
     return ((float)rand()+1.0)/((float)RAND_MAX+2.0);
@@ -44,24 +45,27 @@ void setup() {
         mydata->tumble_time = 64 + fabs(rand_normal(0, 1)) * 32; // 2 sec // not too big
         if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
     }
-    mydata->run_time = 32; // 255;
+    mydata->run_time = 64; // 255;
     mydata->direction = rand_soft() % 2;
-    mydata->prob = rand_soft() * 100;
+    mydata->prob = rand_soft() % 100;
 }
 
 void loop() {
     mydata->cycle = kilo_ticks%(mydata->tumble_time + mydata->run_time);
-    
-    // printf("%d\n", mydata->prob);
+    // printf("\ncycle : %d\n", mydata->cycle);
+    // printf("run : %d\n", mydata->run_time);
+    // printf("tumble %d\n", mydata->tumble_time);
+    // printf("prob %d\n", mydata->prob);
+    // printf("direction %d\n", mydata->direction);
+
     if (flag == 0) {
         for(;;) {
             mydata->tumble_time = 64 + fabs(rand_normal(0, 1)) * 32; // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
-        //printf("tumble_time : %d\n", mydata->tumble_time);
         mydata->run_time = 64;
         mydata->direction = rand_soft() % 2;
-        mydata->prob = rand_soft() * 100;
+        mydata->prob = rand_soft() % 100;
         flag = 1;
     } else if (mydata->prob < 5) { // move
         if (mydata->cycle < mydata->tumble_time) {
@@ -77,14 +81,23 @@ void loop() {
             spinup_motors();
             set_motors(kilo_straight_left, kilo_straight_right);
             set_color(RGB(0,3,0)); // green
-            flag = 0;
-            
+            // flag = 0;
+            check_lastcycle = mydata->cycle;
+            if (check_lastcycle >= mydata->tumble_time + mydata->run_time - 1) {
+                check_lastcycle = 0;
+                flag = 0;
+            }            
         }
     } else { // stop
         if (mydata->cycle < mydata->tumble_time + mydata->run_time) {
             set_motors(0, 0);
             set_color(RGB(3,3,3)); // white
-            flag = 0;
+            // flag = 0;
+            check_lastcycle = mydata->cycle;
+            if (check_lastcycle >= mydata->tumble_time + mydata->run_time - 1) {
+                check_lastcycle = 0;
+                flag = 0;
+            }
         }
     }
 
