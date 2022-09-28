@@ -271,6 +271,10 @@ def launch_kilombo(base_config, arenaFileName, seed, launcher, args):
 
 def compute_stats_per_arena(data, config, output_path, log_filename):
     all_stats = {}
+    # Stats related to positions of the robots
+    all_stats['interindiv_dist'] = np.array([ interindiv_dist(r['x_position'], r['y_position']) for r in data])
+    all_stats['mean_neighbors_dist'] = np.array([ mean_neighbors_dist(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
+    all_stats['occupied_surface'] = np.array([ occupied_surface(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
     return all_stats
 
 
