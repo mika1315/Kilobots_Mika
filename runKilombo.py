@@ -17,8 +17,6 @@ import json
 import yaml
 import copy
 import pickle
-import sklearn
-import sklearn.metrics
 import scipy
 
 
