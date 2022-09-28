@@ -305,7 +305,6 @@ def compute_stats_all_arenas(data_per_arena, stats_per_arena, config, output_pat
 
 if __name__ == "__main__":
     from multiprocessing import Pool
-    from plots import *
 
     import argparse
     parser = argparse.ArgumentParser()
@@ -380,18 +379,6 @@ if __name__ == "__main__":
     results = {'data_per_arena': data_per_arena, 'stats_per_arena': stats_per_arena, 'stats': stats}
     with open(os.path.join(output_path, "data.p"), "wb") as f:
         pickle.dump(results, f)
-
-    # Make all plots
-    try:
-        all_plots(base_config, results, output_path)
-    except Exception as e:
-        warnings.warn("ERROR while creating plots.", RuntimeWarning)
-        traceback.print_exc()
-
-    #new_config = copy.deepcopy(base_config)
-    #new_config['arenaFileName'] = arenaFileName
-    #params = [(config, )]
-    #data_per_arena = pool.star(_sim, range(initial_seed, initial_seed+nb_runs))
 
 
 

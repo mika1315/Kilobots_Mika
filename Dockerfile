@@ -59,7 +59,7 @@ RUN \
     cmake .. && make -j 10 && make install
 
 RUN \
-    pip3 install numpy scipy pyaml matplotlib seaborn scikit-learn
+    pip3 install numpy scipy pyaml matplotlib seaborn
 
 # Compile Kilobots_Mika
 RUN \
