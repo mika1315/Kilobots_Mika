@@ -11,7 +11,7 @@ finalresultsPathInContainer=/home/user/finalresults
 imageName=${3:-"kilobots-mika"}
 uid=$(id -u)
 confPath=$(pwd)/conf
-confPathInContainer=/home/user/Kilobots_Mika/kilo/conf
+confPathInContainer=/home/user/Kilobots_Mika/conf
 priorityParam="-c 128"
 
 if [ ! -d $finalresultsPath ]; then
