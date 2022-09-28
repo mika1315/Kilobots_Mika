@@ -64,7 +64,7 @@ RUN \
 # Compile Kilobots_Mika
 RUN \
     cd /home/user/Kilobots_Mika && \
-    make -j 20
+    make clean && make -j 20
 
 # Prepare for entrypoint execution
 #CMD ["bash"]

@@ -18,6 +18,7 @@ import yaml
 import copy
 import pickle
 import scipy
+import scipy.spatial
 
 
 
