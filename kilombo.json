@@ -10,7 +10,7 @@
     "commsRadius" : 85,
     "showComms" : 1,
     "showCommsRadius" : 0,
-    "distributePercent" : 0.05,
+    "distributePercent" : 0.10,
     "displayWidth"  : 1000,
     "displayHeight" : 1000,
     "displayScale"  : 0.85,
@@ -28,6 +28,6 @@
     "useGrid": 1,
     "GUI"  : 1 ,
     "speed": 7,
-    "prob_moving": 10
+    "prob_moving": 5
 }
 

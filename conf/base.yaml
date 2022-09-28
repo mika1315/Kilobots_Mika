@@ -1,6 +1,6 @@
 ---
 
-nb_runs: 4
+nb_runs: 8
 extended_logs: True
 keep_tmp_files: False
 
@@ -48,8 +48,9 @@ stateFileName: "simstates.json"
 stateFileSteps: 1000
 useGrid: 1
 GUI: 0 
+speed: 7
 
-prob_moving: 10
+prob_moving: 5
 
 # MODELINE "{{{1
 # vim:expandtab:softtabstop=4:shiftwidth=4:fileencoding=utf-8
