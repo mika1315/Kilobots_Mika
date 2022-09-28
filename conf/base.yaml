@@ -25,7 +25,7 @@ arenaFileNames:
 arenaNormalizedArea: 70000.0
 formation: "random"
 timeStep: 0.0416666
-simulationTime: 10000.0
+simulationTime: 1800.0
 commsRadius: 85
 msgSuccessRate: 0.1
 distanceNoise: 5.0
@@ -49,6 +49,7 @@ stateFileSteps: 1000
 useGrid: 1
 GUI: 0 
 
+prob_moving: 10
 
 # MODELINE "{{{1
 # vim:expandtab:softtabstop=4:shiftwidth=4:fileencoding=utf-8

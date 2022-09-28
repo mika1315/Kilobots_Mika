@@ -14,10 +14,6 @@
 #include "simulation.h"
 REGISTER_USERDATA(USERDATA)
 
-#ifdef SIMULATOR
-#include <jansson.h>
-json_t *json_state();
-#endif
 
 // #define T_DELAY 64
 // uint16_t const t_t = 64;
@@ -26,6 +22,18 @@ uint8_t flag = 1;
 uint8_t lower_tumble_time = 0;
 uint8_t upper_tumble_time = 4 * 32;
 uint8_t check_lastcycle = 0;
+uint8_t prob_moving = 5;
+
+
+#ifdef SIMULATOR
+#include <jansson.h>
+json_t *json_state();
+
+void init_params() {
+    init_int(prob_moving);
+}
+#endif
+
 
 float Uniform(void){
     return ((float)rand()+1.0)/((float)RAND_MAX+2.0);
@@ -67,7 +75,7 @@ void loop() {
         mydata->direction = rand_soft() % 2;
         mydata->prob = rand_soft() % 100;
         flag = 1;
-    } else if (mydata->prob < 5) { // move
+    } else if (mydata->prob < prob_moving) { // move
         if (mydata->cycle < mydata->tumble_time) {
             // tumble state
             spinup_motors();

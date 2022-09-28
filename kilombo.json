@@ -27,6 +27,7 @@
     "stateFileSteps" : 0,
     "useGrid": 1,
     "GUI"  : 1 ,
-    "speed": 7
+    "speed": 7,
+    "prob_moving": 10
 }
 
