@@ -167,7 +167,7 @@ def occupied_surface(xs, ys, fop):
 
 
 class KilomboLauncher:
-    def __init__(self, exec_path = "../Kilobots_Mika", base_dir = "."):
+    def __init__(self, exec_path = "dispersion", base_dir = "."):
         self.exec_path = os.path.abspath(exec_path)
         self.base_dir = base_dir
 
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--inputPath', type=str, default='test.yaml', help = "Path of the agents state file")
     parser.add_argument('-o', '--outputPath', type=str, default="results", help = "Path of the resulting csv file")
-    parser.add_argument('-e', '--execPath', type=str, default="Kilobots_Mika", help = "Path of the kilombo executable")
+    parser.add_argument('-e', '--execPath', type=str, default="dispersion", help = "Path of the kilombo executable")
     parser.add_argument('-n', '--nbRuns', type=int, default=0, help = "Number of runs")
     parser.add_argument('-N', '--maxProcesses', type=int, default=0, help = "Max number of processes, or 0")
     parser.add_argument('-s', '--seed', type=int, default=42, help = "Random seed")

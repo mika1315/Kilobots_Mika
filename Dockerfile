@@ -14,7 +14,7 @@ RUN \
 # Make sure your domain is accepted
 RUN \
     touch /root/.ssh/known_hosts && \
-    ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # Download repositories
 RUN \
