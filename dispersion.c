@@ -16,8 +16,8 @@ REGISTER_USERDATA(USERDATA)
 
 
 uint8_t prob_moving = 5;
-uint16_t offset = 0;
-uint16_t scaling = 1;
+float offset = 0;
+float scaling = 64;
 float d_optim = 85.f;
 uint8_t const lower_tumble_time = 0;
 uint16_t const upper_tumble_time = 4 * 32;
@@ -198,23 +198,18 @@ void loop() {
     get_d_min();
     mydata->cycle = kilo_ticks - mydata->last_kiloticks;
 
-    //printf("\ncycle : %d\n", mydata->cycle);
-    //printf("tumble time : %d\n", mydata->tumble_time);
-    //printf("run time : %d\n", mydata->run_time);
-    //printf("prob %d\n", mydata->prob);
-    //printf("direction %d\n", mydata->direction);
-
     if (mydata->flag == 0) {
         for(;;) {
             mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
         mydata->frustration = 1.0f - mydata->d_min / d_optim; //  depends on min dist to closest robot
-        printf("d_min  : %f\n", mydata->d_min);
-        printf("d_min / d_optim : %f\n", mydata->d_min / d_optim);
-        printf("frustration  : %f\n", mydata->frustration);
-        mydata->run_time = offset + mydata->frustration * scaling;
-        printf("run time : %d\n", mydata->run_time);
+        float is_positive_run_time = (float)offset + (float)mydata->frustration * (float)scaling;
+        if(is_positive_run_time > 0)
+            mydata->run_time = is_positive_run_time;
+        else
+            mydata->run_time = 0;
+        //mydata->run_time = offset + mydata->frustration * scaling;
         //mydata->run_time = 64;
         mydata->direction = rand_soft() % 2;
         mydata->prob = (rand_soft() * 100) / 255;
