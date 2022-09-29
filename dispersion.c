@@ -16,6 +16,9 @@ REGISTER_USERDATA(USERDATA)
 
 
 uint8_t prob_moving = 5;
+uint16_t offset = 0;
+uint16_t scaling = 1;
+float d_optim = 85.f;
 uint8_t const lower_tumble_time = 0;
 uint16_t const upper_tumble_time = 4 * 32;
 uint32_t const kiloticks_random_walk_choice = 15;
@@ -27,6 +30,9 @@ json_t *json_state();
 
 void init_params() {
     init_int(prob_moving);
+    init_float(offset);
+    init_float(scaling);
+    init_float(d_optim);
 }
 #endif
 
@@ -146,6 +152,17 @@ float rand_normal(float mu, float sigma) {
     return mu + sigma*z;
 }
 
+void get_d_min() {
+    int8_t i;
+    uint8_t candidate_d_min = d_optim;
+
+    for(i = 0; i < mydata->N_Neighbors; i++) {
+        if (candidate_d_min > mydata->neighbors[i].dist)
+            candidate_d_min = mydata->neighbors[i].dist;
+    }
+    mydata->d_min = candidate_d_min;
+}
+
 void setup() {
     // Initialize the random generator
     while(get_voltage() == -1);
@@ -178,7 +195,7 @@ void loop() {
     /*
     run and tumble algorithm
     */
-
+    get_d_min();
     mydata->cycle = kilo_ticks - mydata->last_kiloticks;
 
     //printf("\ncycle : %d\n", mydata->cycle);
@@ -192,11 +209,13 @@ void loop() {
             mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
-        uint16_t offset = 0;
-        // uint16_t frustration = ...; //  depends on min dist to closest robot
-        uint16_t scaling = 1; 
-        //mydata->run_time = offset + frustration * scaling;
-        mydata->run_time = 64;
+        mydata->frustration = 1.0f - mydata->d_min / d_optim; //  depends on min dist to closest robot
+        printf("d_min  : %f\n", mydata->d_min);
+        printf("d_min / d_optim : %f\n", mydata->d_min / d_optim);
+        printf("frustration  : %f\n", mydata->frustration);
+        mydata->run_time = offset + mydata->frustration * scaling;
+        printf("run time : %d\n", mydata->run_time);
+        //mydata->run_time = 64;
         mydata->direction = rand_soft() % 2;
         mydata->prob = (rand_soft() * 100) / 255;
         mydata->flag = 1;

@@ -69,6 +69,8 @@ typedef struct {
     uint8_t direction;
     uint8_t prob;
     uint8_t flag;
+    float d_min;
+    float frustration;
 
 } USERDATA;
 
