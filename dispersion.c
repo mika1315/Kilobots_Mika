@@ -19,13 +19,120 @@ REGISTER_USERDATA(USERDATA)
 json_t *json_state();
 #endif
 
-// #define T_DELAY 64
-// uint16_t const t_t = 64;
-// uint16_t const t_r = ;
 uint8_t flag = 1;
-uint8_t lower_tumble_time = 0;
-uint8_t upper_tumble_time = 4 * 32;
-uint8_t check_lastcycle = 0;
+uint16_t check_lastcycle = 0;
+uint32_t last_kiloticks = 0;
+uint8_t const lower_tumble_time = 0;
+uint16_t const upper_tumble_time = 4 * 32;
+uint32_t const kiloticks_random_walk_choice = 15;
+uint32_t const neighbors_age_of_removal = 248;
+
+/****************************************************/
+/* Colors {{{1 */
+#define NRAINBOWCOLORS (sizeof(colors) / sizeof((colors)[0]))
+// Double rainbow colors (all the way !)
+uint8_t colors[] = {
+    RGB(3,0,0),  // red
+    RGB(3,3,0),  // yellow
+    RGB(0,3,0),  // green
+    RGB(0,3,3),  // green
+    RGB(0,0,3),  // blue
+
+    RGB(2,2,2),  // grey
+    RGB(0,0,0),  // off
+    RGB(2,1,0),  // orange
+    RGB(1,1,1),  // grey
+
+    RGB(2,0,0),  // red
+    RGB(2,2,0),  // yellow
+    RGB(0,2,0),  // green
+    RGB(0,2,2),  // green
+    RGB(0,0,2),  // blue
+};
+
+void set_color_from_nb_neighbours() {
+    uint8_t const nb_neighbours = mydata->N_Neighbors;
+    if(nb_neighbours == 0) {
+ //       printf("set_color_from_nb_neighbours: nb_neighbours: %d\n", nb_neighbours);
+        return;
+    }
+    float color_idx = (NRAINBOWCOLORS - 1) * ((float)(nb_neighbours - 0) / (float)(MAXN - 0));
+    set_color(colors[(uint8_t)color_idx]);
+//    printf("set_color_from_nb_neighbours: nb_neighbours: %d\n", nb_neighbours);
+}
+
+
+/****************************************************/
+/* Messages {{{1 */
+void setup_message(void) {
+    uint8_t index = 0;
+    //mydata->msg.type = NORMAL;
+    mydata->msg.type = (int8_t)mydata->data_type;
+
+    mydata->msg.data[index++] = kilo_uid & 0xff;         // 0 low  ID
+    mydata->msg.data[index++] = kilo_uid >> 8;           // 1 high ID
+
+    mydata->msg.crc = message_crc(&mydata->msg);
+}
+
+
+/* Process a received message at the front of the ring buffer.
+ * Go through the list of neighbors. If the message is from a bot
+ * already in the list, update the information, otherwise
+ * add a new entry in the list
+ */
+void process_message() {
+    uint8_t index = 0;
+    uint8_t i;
+    uint16_t ID;
+
+    // Estimate distance of neighbor
+    uint8_t d = estimate_distance(&RB_front().dist);
+    if (d > CUTOFF)
+        return;
+
+    uint8_t *data = RB_front().msg.data;
+    ID = data[index] | (data[index+1] << 8);
+    index += 2;
+
+    //data_type_t data_type = data[index++];
+    data_type_t data_type = RB_front().msg.type;
+
+    // search the neighbor list by ID
+    for(i = 0; i < mydata->N_Neighbors; i++)
+        if(mydata->neighbors[i].ID == ID) // found it
+            break;
+
+    if(i == mydata->N_Neighbors)   // this neighbor is not in list
+        if(mydata->N_Neighbors < MAXN-1) // if we have too many neighbors, we overwrite the last entry
+            mydata->N_Neighbors++;          // sloppy but better than overflow
+
+    // i now points to where this message should be stored
+    mydata->neighbors[i].ID = ID;
+    mydata->neighbors[i].timestamp = kilo_ticks;
+    mydata->neighbors[i].dist = d;
+    mydata->neighbors[i].data_type = data_type;
+}
+
+
+/* Go through the list of neighbors, remove entries older than a threshold,
+ * currently 2 seconds.
+ */
+void purgeNeighbors(void) {
+    int8_t i;
+
+    for (i = mydata->N_Neighbors-1; i >= 0; i--)
+        if (kilo_ticks - mydata->neighbors[i].timestamp > neighbors_age_of_removal) //31 ticks = 1 s
+        { //this one is too old.
+            mydata->neighbors[i] = mydata->neighbors[mydata->N_Neighbors-1]; //replace it by the last entry
+            mydata->N_Neighbors--;
+        }
+}
+
+
+void clearNeighbors(void) {
+    mydata->N_Neighbors = 0;
+}
 
 float Uniform(void){
     return ((float)rand()+1.0)/((float)RAND_MAX+2.0);
@@ -47,27 +154,50 @@ void setup() {
     }
     mydata->run_time = 64; // 255;
     mydata->direction = rand_soft() % 2;
-    mydata->prob = rand_soft() % 100;
+    mydata->prob = (rand_soft() * 100) / 255;
+
+    // Reinit neighbors list
+    clearNeighbors();
+
+    setup_message();
 }
 
 void loop() {
-    mydata->cycle = kilo_ticks%(mydata->tumble_time + mydata->run_time);
-    // printf("\ncycle : %d\n", mydata->cycle);
-    // printf("run : %d\n", mydata->run_time);
-    // printf("tumble %d\n", mydata->tumble_time);
-    // printf("prob %d\n", mydata->prob);
-    // printf("direction %d\n", mydata->direction);
+
+    purgeNeighbors();
+
+    // Process messages in the RX ring buffer
+    while (!RB_empty()) {
+        process_message();
+        RB_popfront();
+    }
+
+    /*
+    run and tumble algorithm
+    */
+
+    mydata->cycle = kilo_ticks - last_kiloticks;
+
+    //printf("\ncycle : %d\n", mydata->cycle);
+    printf("tumble time : %d\n", mydata->tumble_time);
+    printf("run time : %d\n", mydata->run_time);
+    //printf("prob %d\n", mydata->prob);
+    //printf("direction %d\n", mydata->direction);
 
     if (flag == 0) {
         for(;;) {
             mydata->tumble_time = 64 + fabs(rand_normal(0, 1)) * 32; // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
+        uint16_t offset = 0;
+        // uint16_t frustration = ...; //  depends on min dist to closest robot
+        uint16_t scaling = 1; 
+        //mydata->run_time = offset + frustration * scaling;
         mydata->run_time = 64;
         mydata->direction = rand_soft() % 2;
-        mydata->prob = rand_soft() % 100;
+        mydata->prob = (rand_soft() * 100) / 255;
         flag = 1;
-    } else if (mydata->prob < 5) { // move
+    } else if (mydata->prob < 100) { // move
         if (mydata->cycle < mydata->tumble_time) {
             // tumble state
             spinup_motors();
@@ -81,31 +211,34 @@ void loop() {
             spinup_motors();
             set_motors(kilo_straight_left, kilo_straight_right);
             set_color(RGB(0,3,0)); // green
-            // flag = 0;
-            check_lastcycle = mydata->cycle;
-            if (check_lastcycle >= mydata->tumble_time + mydata->run_time - 1) {
-                check_lastcycle = 0;
-                flag = 0;
-            }            
+        } else {
+            last_kiloticks = kilo_ticks;
+            flag = 0;
         }
     } else { // stop
         if (mydata->cycle < mydata->tumble_time + mydata->run_time) {
             set_motors(0, 0);
             set_color(RGB(3,3,3)); // white
-            // flag = 0;
-            check_lastcycle = mydata->cycle;
-            if (check_lastcycle >= mydata->tumble_time + mydata->run_time - 1) {
-                check_lastcycle = 0;
-                flag = 0;
-            }
+        } else {
+            last_kiloticks = kilo_ticks;
+            flag = 0;
         }
     }
+
+    // set_color_from_nb_neighbours();
 
 }
 
 int main(void) {
     // initialize hardware
     kilo_init();
+
+    // initialize ring buffer
+    RB_init();
+
+    // register message callbacks
+    kilo_message_rx = rxbuffer_push;
+    kilo_message_tx = message_tx;
     
     // register your program
     kilo_start(setup, loop);
