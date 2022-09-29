@@ -149,7 +149,7 @@ void setup() {
     rand_seed(rand_hard() + kilo_uid);
 
     for(;;) {
-        mydata->tumble_time = 64 + fabs(rand_normal(0, 1)) * 32; // 2 sec // not too big
+        mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
         if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
     }
     mydata->run_time = 64; // 255;
@@ -186,7 +186,7 @@ void loop() {
 
     if (flag == 0) {
         for(;;) {
-            mydata->tumble_time = 64 + fabs(rand_normal(0, 1)) * 32; // 2 sec // not too big
+            mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
         uint16_t offset = 0;
