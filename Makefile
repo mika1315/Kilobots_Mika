@@ -4,7 +4,7 @@
 # configured below, these needs to be adapted to the system.
 
 #list of c files in this project
-SOURCES=dispersion.c json_state.c simulation.c
+SOURCES=dispersion.c json_state.c util.c simulation.c
 
 #name of the executable file
 EXECUTABLE=dispersion
