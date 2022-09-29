@@ -14,15 +14,21 @@
 #include "simulation.h"
 REGISTER_USERDATA(USERDATA)
 
-#ifdef SIMULATOR
-#include <jansson.h>
-json_t *json_state();
-#endif
 
+uint8_t prob_moving = 5;
 uint8_t const lower_tumble_time = 0;
 uint16_t const upper_tumble_time = 4 * 32;
 uint32_t const kiloticks_random_walk_choice = 15;
 uint32_t const neighbors_age_of_removal = 248;
+
+#ifdef SIMULATOR
+#include <jansson.h>
+json_t *json_state();
+
+void init_params() {
+    init_int(prob_moving);
+}
+#endif
 
 /****************************************************/
 /* Colors {{{1 */
@@ -194,7 +200,7 @@ void loop() {
         mydata->direction = rand_soft() % 2;
         mydata->prob = (rand_soft() * 100) / 255;
         mydata->flag = 1;
-    } else if (mydata->prob < 5) { // move
+    } else if (mydata->prob < prob_moving) { // move
         if (mydata->cycle < mydata->tumble_time) {
             // tumble state
             spinup_motors();

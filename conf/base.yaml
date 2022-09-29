@@ -1,0 +1,57 @@
+---
+
+nb_runs: 8
+extended_logs: True
+keep_tmp_files: False
+
+botName: "LIMMSSWARM"
+randSeed: 1
+nBots: 25
+arenaFileNames:
+#    - "arenas/triangle.csv"
+#    - "arenas/square.csv"
+    - "arenas/disk.csv"
+    - "arenas/annulus.csv"
+#    - "arenas/H.csv"
+#    - "arenas/squarewithHole.csv"
+#    - "arenas/arena1.csv"
+#    - "arenas/arena2.csv"
+#    - "arenas/arena3.csv"
+#    - "arenas/arena4.csv"
+#    - "arenas/arena5.csv"
+#    - "arenas/arena6.csv"
+#    - "arenas/arena7.csv"
+#    - "arenas/arena8.csv"
+arenaNormalizedArea: 70000.0
+formation: "random"
+timeStep: 0.0416666
+simulationTime: 1800.0
+commsRadius: 85
+msgSuccessRate: 0.1
+distanceNoise: 5.0
+showComms: 1
+showCommsRadius: 0
+distributePercent: 0.10
+displayWidth : 1000
+displayHeight: 1000
+displayScale : 1.00
+showHist: 0
+histLength: 1000
+storeHistory: 0
+saveVideo:  0
+saveVideoN: 100
+colorscheme: "bright"
+imageName: "./movie/f%04d.bmp"
+stepsPerFrame: 20
+finalImage: null
+stateFileName: "simstates.json"
+stateFileSteps: 1000
+useGrid: 1
+GUI: 0 
+speed: 7
+
+prob_moving: 5
+
+# MODELINE "{{{1
+# vim:expandtab:softtabstop=4:shiftwidth=4:fileencoding=utf-8
+# vim:foldmethod=marker
