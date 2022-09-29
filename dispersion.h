@@ -24,6 +24,7 @@ extern float initial_x_max_val;
 
 
 void set_color_from_nb_neighbours();
+void init_params();
 
 // declare variables
 
