@@ -15,7 +15,7 @@
 REGISTER_USERDATA(USERDATA)
 
 
-uint8_t prob_moving = 5;
+float prob_moving = 5;
 float offset = 0;
 float scaling = 64;
 float d_optim = 85.f;
