@@ -19,9 +19,6 @@ REGISTER_USERDATA(USERDATA)
 json_t *json_state();
 #endif
 
-uint8_t flag = 1;
-uint16_t check_lastcycle = 0;
-uint32_t last_kiloticks = 0;
 uint8_t const lower_tumble_time = 0;
 uint16_t const upper_tumble_time = 4 * 32;
 uint32_t const kiloticks_random_walk_choice = 15;
@@ -176,15 +173,15 @@ void loop() {
     run and tumble algorithm
     */
 
-    mydata->cycle = kilo_ticks - last_kiloticks;
+    mydata->cycle = kilo_ticks - mydata->last_kiloticks;
 
     //printf("\ncycle : %d\n", mydata->cycle);
-    printf("tumble time : %d\n", mydata->tumble_time);
-    printf("run time : %d\n", mydata->run_time);
+    //printf("tumble time : %d\n", mydata->tumble_time);
+    //printf("run time : %d\n", mydata->run_time);
     //printf("prob %d\n", mydata->prob);
     //printf("direction %d\n", mydata->direction);
 
-    if (flag == 0) {
+    if (mydata->flag == 0) {
         for(;;) {
             mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
@@ -196,8 +193,8 @@ void loop() {
         mydata->run_time = 64;
         mydata->direction = rand_soft() % 2;
         mydata->prob = (rand_soft() * 100) / 255;
-        flag = 1;
-    } else if (mydata->prob < 100) { // move
+        mydata->flag = 1;
+    } else if (mydata->prob < 5) { // move
         if (mydata->cycle < mydata->tumble_time) {
             // tumble state
             spinup_motors();
@@ -212,16 +209,16 @@ void loop() {
             set_motors(kilo_straight_left, kilo_straight_right);
             set_color(RGB(0,3,0)); // green
         } else {
-            last_kiloticks = kilo_ticks;
-            flag = 0;
+            mydata->last_kiloticks = kilo_ticks;
+            mydata->flag = 0;
         }
     } else { // stop
         if (mydata->cycle < mydata->tumble_time + mydata->run_time) {
             set_motors(0, 0);
             set_color(RGB(3,3,3)); // white
         } else {
-            last_kiloticks = kilo_ticks;
-            flag = 0;
+            mydata->last_kiloticks = kilo_ticks;
+            mydata->flag = 0;
         }
     }
 

@@ -61,11 +61,13 @@ typedef struct {
 
     ext_t val;
 
-    uint8_t cycle;
+    uint16_t cycle;
+    uint16_t last_kiloticks;
     uint16_t tumble_time;
     uint16_t run_time;
     uint8_t direction;
     uint8_t prob;
+    uint8_t flag;
 
 } USERDATA;
 
