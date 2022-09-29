@@ -196,6 +196,7 @@ void init_arena() {
 
 void global_setup() {
     init_arena();
+    init_params();
 }
 
 

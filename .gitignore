@@ -1,0 +1,78 @@
+# python folders to ignore
+build/
+dist/
+docs/_build/
+__pycache__/
+
+
+# Python temporary files
+MANIFEST
+*.pyc
+*.pyo
+*.orig
+*.cprof
+
+# Temporary files
+*~
+
+# System files
+.DS_Store
+
+# C extensions
+*.so
+*.o
+
+# Binaries
+dispersion
+
+# Example result files
+final.p
+*.pdf
+results.*/
+
+# Distribution
+env/
+*.egg-info/
+build/
+dist/
+sdist/
+wheels/
+*.egg
+
+# Mypy
+.mypy_cache/
+
+
+# Result files
+*.gif
+results/
+endstate.json
+movie*
+videos
+tmp
+rndtmp*json
+downloadRes.sh
+TODO
+
+# Binaries
+*.hex
+*.bin
+*.elf
+*.lss
+valgrind*
+
+# Singularity files
+*.simg
+
+# Libs
+kilolib*
+kilombo
+kilobotics-labs
+Kilobots*
+Turing*
+kilogui*
+
+# Tmp plots scripts
+plots_acc_*py
+
+
