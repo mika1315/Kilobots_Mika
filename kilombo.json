@@ -28,9 +28,10 @@
     "useGrid": 1,
     "GUI"  : 1 ,
     "speed": 7,
-    "prob_moving": 5,
+    "prob_moving": 1,
+    "base_tumble_time": 96,
     "offset": 0,
-    "scaling": 1,
-    "d_optim": 85
+    "scaling": 64,
+    "d_optim": 60
 }
 

@@ -15,12 +15,14 @@
 REGISTER_USERDATA(USERDATA)
 
 
-float prob_moving = 5;
+float prob_moving;
+uint8_t base_tumble_time = 96;
 float offset = 0;
 float scaling = 64;
 float d_optim = 85.f;
+uint8_t const dist_with_no_neighbors = 255; // enough big
 uint8_t const lower_tumble_time = 0;
-uint16_t const upper_tumble_time = 4 * 32;
+uint16_t const upper_tumble_time = 7 * 32; // todo: is it too big?
 uint32_t const kiloticks_random_walk_choice = 15;
 uint32_t const neighbors_age_of_removal = 248;
 
@@ -29,7 +31,8 @@ uint32_t const neighbors_age_of_removal = 248;
 json_t *json_state();
 
 void init_params() {
-    init_int(prob_moving);
+    init_float(prob_moving);
+    init_int(base_tumble_time);
     init_float(offset);
     init_float(scaling);
     init_float(d_optim);
@@ -154,7 +157,7 @@ float rand_normal(float mu, float sigma) {
 
 void get_d_min() {
     int8_t i;
-    uint8_t candidate_d_min = d_optim;
+    uint8_t candidate_d_min = dist_with_no_neighbors;
 
     for(i = 0; i < mydata->N_Neighbors; i++) {
         if (candidate_d_min > mydata->neighbors[i].dist)
@@ -169,7 +172,7 @@ void setup() {
     rand_seed(rand_hard() + kilo_uid);
 
     for(;;) {
-        mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
+        mydata->tumble_time = fabs(base_tumble_time + rand_normal(0, 1) * 32); // 2 sec // not too big
         if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
     }
     mydata->run_time = 64; // 255;
@@ -200,17 +203,24 @@ void loop() {
 
     if (mydata->flag == 0) {
         for(;;) {
-            mydata->tumble_time = fabs(64 + rand_normal(0, 1) * 32); // 2 sec // not too big
+            mydata->tumble_time = fabs(base_tumble_time + rand_normal(0, 1) * 32); // 2 sec // not too big
             if (mydata->tumble_time < upper_tumble_time && mydata->tumble_time > lower_tumble_time) break;
         }
-        mydata->frustration = 1.0f - mydata->d_min / d_optim; //  depends on min dist to closest robot
+
+        float is_positive_frustration = 1.0f - mydata->d_min / d_optim;
+        if (is_positive_frustration > 0) // d_min < d_optim
+            mydata->frustration = is_positive_frustration;
+        else if (mydata->d_min < dist_with_no_neighbors) // it has some neighbors // d_min >= d_optim
+            mydata->frustration = 0;
+        else // if it has neighbors, it needs to explore // d_min >= d_optim
+            mydata->frustration = is_positive_frustration * -1.0f;
+
         float is_positive_run_time = (float)offset + (float)mydata->frustration * (float)scaling;
-        if(is_positive_run_time > 0)
+        if (is_positive_run_time > 0)
             mydata->run_time = is_positive_run_time;
         else
             mydata->run_time = 0;
-        //mydata->run_time = offset + mydata->frustration * scaling;
-        //mydata->run_time = 64;
+
         mydata->direction = rand_soft() % 2;
         mydata->prob = (rand_soft() * 100) / 255;
         mydata->flag = 1;
