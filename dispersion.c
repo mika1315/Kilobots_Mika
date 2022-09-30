@@ -212,7 +212,7 @@ void loop() {
             mydata->frustration = is_positive_frustration;
         else if (mydata->d_min < dist_with_no_neighbors) // it has some neighbors // d_min >= d_optim
             mydata->frustration = 0;
-        else // if it has neighbors, it needs to explore // d_min >= d_optim
+        else // if it has no neighbors, it needs to explore // d_min == dist_with_no_neighbors
             mydata->frustration = is_positive_frustration * -1.0f;
 
         float is_positive_run_time = (float)offset + (float)mydata->frustration * (float)scaling;
