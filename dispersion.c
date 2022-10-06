@@ -16,13 +16,13 @@ REGISTER_USERDATA(USERDATA)
 
 
 float prob_moving = 0.1;
-uint8_t base_tumble_time = 120;
+uint8_t base_tumble_time = 64;
 float offset = -5;
 float scaling = 64;
 float d_optim = 48;
-uint8_t const dist_with_no_neighbors = 255; // enough big
+uint8_t const dist_with_no_neighbors = 255; // big enough
 uint8_t const lower_tumble_time = 0;
-uint16_t const upper_tumble_time = 7 * 32; // todo: is it too big?
+uint16_t const upper_tumble_time = 4 * 32;
 uint32_t const kiloticks_random_walk_choice = 15;
 uint32_t const neighbors_age_of_removal = 248;
 
