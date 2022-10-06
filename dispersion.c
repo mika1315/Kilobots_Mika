@@ -15,14 +15,14 @@
 REGISTER_USERDATA(USERDATA)
 
 
-float prob_moving = 0.1;
-uint8_t base_tumble_time = 64;
+float prob_moving = 0.05;
+uint8_t base_tumble_time = 32;
 float offset = -5;
 float scaling = 64;
 float d_optim = 48;
 uint8_t const dist_with_no_neighbors = 255; // big enough
 uint8_t const lower_tumble_time = 0;
-uint16_t const upper_tumble_time = 4 * 32;
+uint16_t const upper_tumble_time = 2 * 32;
 uint32_t const kiloticks_random_walk_choice = 15;
 uint32_t const neighbors_age_of_removal = 248;
 
@@ -177,7 +177,7 @@ void setup() {
     }
     mydata->run_time = 64; // 255;
     mydata->direction = rand_soft() % 2;
-    mydata->prob = (float)rand_soft() / 255.0f;
+    mydata->prob = ((float)rand_soft() / 255.0f) * ((float)rand_soft() / 255.0f);
 
     // Reinit neighbors list
     clearNeighbors();
@@ -222,7 +222,7 @@ void loop() {
             mydata->run_time = 0;
 
         mydata->direction = rand_soft() % 2;
-        mydata->prob = (float)rand_soft() / 255.0f;
+        mydata->prob = ((float)rand_soft() / 255.0f) * ((float)rand_soft() / 255.0f);
         mydata->flag = 1;
     } else if (mydata->prob < prob_moving) { // move
         if (mydata->cycle < mydata->tumble_time) {
