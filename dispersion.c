@@ -177,7 +177,7 @@ void setup() {
     }
     mydata->run_time = 64; // 255;
     mydata->direction = rand_soft() % 2;
-    mydata->prob = (rand_soft() * 100) / 255;
+    mydata->prob = (float)rand_soft() / 255.0f;
 
     // Reinit neighbors list
     clearNeighbors();
@@ -210,7 +210,7 @@ void loop() {
         float is_positive_frustration = 1.0f - mydata->d_min / d_optim;
         if (is_positive_frustration > 0) // d_min < d_optim
             mydata->frustration = is_positive_frustration;
-        else if (mydata->d_min < dist_with_no_neighbors) // it has some neighbors // d_min >= d_optim
+        else if (mydata->d_min < dist_with_no_neighbors) // if it has some neighbors, it doesn't have to move // d_min >= d_optim
             mydata->frustration = 0;
         else // if it has no neighbors, it needs to explore // d_min == dist_with_no_neighbors
             mydata->frustration = is_positive_frustration * -1.0f;
@@ -222,7 +222,7 @@ void loop() {
             mydata->run_time = 0;
 
         mydata->direction = rand_soft() % 2;
-        mydata->prob = (rand_soft() * 100) / 255;
+        mydata->prob = (float)rand_soft() / 255.0f;
         mydata->flag = 1;
     } else if (mydata->prob < prob_moving) { // move
         if (mydata->cycle < mydata->tumble_time) {
