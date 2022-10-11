@@ -15,7 +15,13 @@ json_t *json_state()
 
     // Store all relevant values
     // Note: make sure there are no NaN values, as they will not be saved at all by jansson !
-    // ...
+    json_object_set_new(state, "t", json_real(kilo_ticks));
+    json_object_set_new(state, "d_min", json_real(mydata->d_min));
+    json_object_set_new(state, "d_max", json_real(mydata->d_max));
+    if (mydata->d_max > 0)
+        json_object_set_new(state, "d_min/d_max", json_real(mydata->d_min/mydata->d_max));
+    else
+        json_object_set_new(state, "d_min/d_max", json_real(0));
 
     return state;
 }

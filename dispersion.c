@@ -166,6 +166,17 @@ void get_d_min() {
     mydata->d_min = candidate_d_min;
 }
 
+void get_d_max() {
+    int8_t i;
+    uint8_t candidate_d_max = 0;
+
+    for(i = 0; i < mydata->N_Neighbors; i++) {
+        if (candidate_d_max < mydata->neighbors[i].dist)
+            candidate_d_max = mydata->neighbors[i].dist;
+    }
+    mydata->d_max = candidate_d_max;
+}
+
 void setup() {
     // Initialize the random generator
     while(get_voltage() == -1);
@@ -199,6 +210,8 @@ void loop() {
     run and tumble algorithm
     */
     get_d_min();
+    get_d_max();
+    
     mydata->cycle = kilo_ticks - mydata->last_kiloticks;
 
     if (mydata->flag == 0) {

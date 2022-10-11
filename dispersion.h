@@ -70,6 +70,7 @@ typedef struct {
     float prob;
     uint8_t flag;
     float d_min;
+    float d_max;
     float frustration;
 
 } USERDATA;
