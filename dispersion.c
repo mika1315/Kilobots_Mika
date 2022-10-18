@@ -23,7 +23,6 @@ float d_optim = 48;
 uint8_t const dist_with_no_neighbors = 255; // big enough
 uint8_t const lower_tumble_time = 0;
 uint16_t const upper_tumble_time = 2 * 32;
-uint32_t const kiloticks_random_walk_choice = 15;
 uint32_t const neighbors_age_of_removal = 248;
 
 #ifdef SIMULATOR
@@ -226,7 +225,7 @@ void loop() {
     if (mydata->d_min != dist_with_no_neighbors)
         d_min_commsRadius = mydata->d_min/85.0f;
     else
-        d_min_commsRadius = 0.0f
+        d_min_commsRadius = 0.0f;
     
     printf("%d, %d, %f, %f\n", kilo_uid, kilo_ticks, d_min_d_max, d_min_commsRadius);
     mydata->cycle = kilo_ticks - mydata->last_kiloticks;
