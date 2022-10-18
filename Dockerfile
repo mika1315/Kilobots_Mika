@@ -18,7 +18,7 @@ RUN \
 
 # Download repositories
 RUN \
-    git clone git@github.com:leo-cazenille/Kilobots_Mika.git && \
+    git clone git@github.com:mika1315/Kilobots_Mika.git && \
     cd Kilobots_Mika
 
 

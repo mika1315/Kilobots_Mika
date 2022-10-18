@@ -170,10 +170,12 @@ void get_d_max() {
     int8_t i;
     uint8_t candidate_d_max = 0;
 
+    // If it has only one neighbor, d_min/d_max should be 0.
     for(i = 0; i < mydata->N_Neighbors; i++) {
         if (candidate_d_max < mydata->neighbors[i].dist)
             candidate_d_max = mydata->neighbors[i].dist;
     }
+
     mydata->d_max = candidate_d_max;
 }
 
@@ -211,7 +213,22 @@ void loop() {
     */
     get_d_min();
     get_d_max();
+    float d_min_d_max;
+    float d_min_commsRadius;
+
+    if (mydata->N_Neighbors != 1) // if it has only one neighbor, d_min/d_max should be 0.
+        d_min_d_max = 0.0f;
+    else if (mydata->d_max > 0)
+        d_min_d_max = mydata->d_min/mydata->d_max;
+    else // if d_max == 1, it doesn't have any neighbors or only one neighbor.
+        d_min_d_max = 0.0f;
     
+    if (mydata->d_min != dist_with_no_neighbors)
+        d_min_commsRadius = mydata->d_min/85.0f;
+    else
+        d_min_commsRadius = 0.0f
+    
+    printf("%d, %d, %f, %f\n", kilo_uid, kilo_ticks, d_min_d_max, d_min_commsRadius);
     mydata->cycle = kilo_ticks - mydata->last_kiloticks;
 
     if (mydata->flag == 0) {
@@ -221,12 +238,14 @@ void loop() {
         }
 
         float is_positive_frustration = 1.0f - mydata->d_min / d_optim;
+        // float is_positive_frustration = (1.0f - mydata->d_min / d_optim) * (1.0f - mydata->d_min/85.0f);
         if (is_positive_frustration > 0) // d_min < d_optim
             mydata->frustration = is_positive_frustration;
         else if (mydata->d_min < dist_with_no_neighbors) // if it has some neighbors, it doesn't have to move // d_min >= d_optim
             mydata->frustration = 0;
         else // if it has no neighbors, it needs to explore // d_min == dist_with_no_neighbors
             mydata->frustration = is_positive_frustration * -1.0f;
+            //mydata->frustration = 0;
 
         float is_positive_run_time = (float)offset + (float)mydata->frustration * (float)scaling;
         if (is_positive_run_time > 0)
