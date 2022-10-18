@@ -60,7 +60,7 @@ def get_min_dist(xs, ys, fop=85):
                 if eucl <= fop:
                     min_dist_candidates.append(eucl)
         if len(min_dist_candidates) == 1: # no neighbor
-            min_dist.append(min(max_dist_candidates))
+            min_dist.append(min(max_dist_candidates)) # == 0
         else: # ignore zero
             min_dist.append(sorted(min_dist_candidates)[1])
     return min_dist
@@ -76,16 +76,15 @@ def get_max_dist(xs, ys, fop=85):
                 if eucl <= fop:
                     max_dist_candidates.append(eucl)
         if len(max_dist_candidates) == 1: # no neighbor
-            max_dist.append(max(max_dist_candidates)) # only one neighbor
-        elif len(max_dist_candidates) == 2:
+            max_dist.append(max(max_dist_candidates)) # == 0
+        elif len(max_dist_candidates) == 2: # only one neighbor
             max_dist.append(0)
         else:
-            max_dist.append(sorted(max_dist_candidates)[-2])
+            max_dist.append(max(max_dist_candidates))
     return max_dist
 
 def get_d_min_divided_by_d_max(xs, ys, fop):
     d = np.zeros(xs.shape[0])
-    print("xs : ", xs.shape)
     min_dist = get_min_dist(xs, ys, fop)
     max_dist = get_max_dist(xs, ys, fop)
     for k, (d_min, d_max) in enumerate(zip(min_dist, max_dist)):
