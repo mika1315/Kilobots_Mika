@@ -51,54 +51,61 @@ def mean_neighbors_dist(xs, ys, fop=85):
 
 def get_min_dist(xs, ys, fop=85):
     min_dist_candidates = []
-    min_dist = []
+    min_dist = np.zeros(xs.shape)
     for k, (x, y) in enumerate(zip(xs, ys)):
-        for xi, yi in zip(x, y):
+        for i, (xi, yi) in enumerate(zip(x, y)):
             min_dist_candidates = []
             for xj, yj in zip(x, y):
                 eucl = scipy.spatial.distance.euclidean([xi, yi], [xj, yj])
                 if eucl <= fop:
                     min_dist_candidates.append(eucl)
-        if len(min_dist_candidates) == 1: # no neighbor
-            min_dist.append(min(max_dist_candidates)) # == 0
-        else: # ignore zero
-            min_dist.append(sorted(min_dist_candidates)[1])
+            if len(min_dist_candidates) == 1: # no neighbor
+                min_dist[k][i] = min(min_dist_candidates) # == 0
+            else: # ignore zero
+                min_dist[k][i] = sorted(min_dist_candidates)[1]
     return min_dist
 
 def get_max_dist(xs, ys, fop=85):
     max_dist_candidates = []
-    max_dist = []
+    max_dist = np.zeros(xs.shape)
     for k, (x, y) in enumerate(zip(xs, ys)):
-        for xi, yi in zip(x, y):
+        for i, (xi, yi) in enumerate(zip(x, y)):
             max_dist_candidates = []
             for xj, yj in zip(x, y):
                 eucl = scipy.spatial.distance.euclidean([xi, yi], [xj, yj])
                 if eucl <= fop:
                     max_dist_candidates.append(eucl)
-        if len(max_dist_candidates) == 1: # no neighbor
-            max_dist.append(max(max_dist_candidates)) # == 0
-        elif len(max_dist_candidates) == 2: # only one neighbor
-            max_dist.append(0)
-        else:
-            max_dist.append(max(max_dist_candidates))
+
+            if len(max_dist_candidates) == 1: # no neighbor
+                max_dist[k][i] = max(max_dist_candidates) # == 0
+            elif len(max_dist_candidates) == 2: # only one neighbor
+                max_dist[k][i] = 0
+            else:
+                max_dist[k][i] = max(max_dist_candidates)
     return max_dist
 
 def get_d_min_divided_by_d_max(xs, ys, fop):
     d = np.zeros(xs.shape[0])
     min_dist = get_min_dist(xs, ys, fop)
     max_dist = get_max_dist(xs, ys, fop)
-    for k, (d_min, d_max) in enumerate(zip(min_dist, max_dist)):
-        if d_max > 0:
-            d[k] = d_min / d_max
-        else:
-            d[k] = 0
+    for k, (d_min_lst, d_max_lst) in enumerate(zip(min_dist, max_dist)):
+        d_k = np.zeros(xs.shape[1]) # == nb_robots
+        for n_k, (d_min, d_max) in enumerate(zip(d_min_lst, d_max_lst)):
+            if d_max > 0:
+                d_k[n_k] = d_min / d_max
+            else:
+                d_k[n_k] = 0
+        d[k] = d_k.mean()
     return d
 
 def get_d_min_divided_by_fop(xs, ys, fop):
     d = np.zeros(xs.shape[0])
     min_dist = get_min_dist(xs, ys, fop)
-    for k, d_min in enumerate(min_dist):
-        d[k] = d_min / fop
+    for k, d_min_lst in enumerate(min_dist):
+        d_k = np.zeros(xs.shape[1]) # == nb_robots
+        for n_k, d_min in enumerate(d_min_lst):
+            d_k[n_k] = d_min / fop
+        d[k] = d_k.mean()
     return d
 
 ref_disk_xy = np.array(
@@ -327,6 +334,8 @@ def compute_stats_per_arena(data, config, output_path, log_filename):
     all_stats['interindiv_dist'] = np.array([ interindiv_dist(r['x_position'], r['y_position']) for r in data])
     all_stats['mean_neighbors_dist'] = np.array([ mean_neighbors_dist(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
     all_stats['occupied_surface'] = np.array([ occupied_surface(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
+    all_stats['d_min_divided_by_d_max'] = np.array([ get_d_min_divided_by_d_max(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
+    all_stats['d_min_divided_by_fop'] = np.array([ get_d_min_divided_by_fop(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
     return all_stats
 
 
@@ -337,8 +346,8 @@ def compute_stats_all_arenas(data_per_arena, stats_per_arena, config, output_pat
         max_mnd_disk = mean_neighbors_dist(np.array([ref_disk_xy[:,0]]), np.array([ref_disk_xy[:,1]]), config['commsRadius'])[0]
         min_mnd_disk = mean_neighbors_dist(np.array([ref_worse_disk_xy[:,0]]), np.array([ref_worse_disk_xy[:,1]]), config['commsRadius'])[0] - 2.0
         mnd_disk = (stats_per_arena['disk']['mean_neighbors_dist'][:,-1] - min_mnd_disk) / (max_mnd_disk - min_mnd_disk)
-        d_min_divided_by_d_max = get_d_min_divided_by_d_max(np.array([ref_disk_xy[:,0]]), np.array([ref_disk_xy[:,1]]), config['commsRadius'])
-        d_min_divided_by_fop = get_d_min_divided_by_fop(np.array([ref_disk_xy[:,0]]), np.array([ref_disk_xy[:,1]]), config['commsRadius'])
+        d_min_divided_by_d_max = stats_per_arena['disk']['d_min_divided_by_d_max']
+        d_min_divided_by_fop = stats_per_arena['disk']['d_min_divided_by_fop']
         stats['mean_mnd_disk'] = mnd_disk.mean()
         stats['std_mnd_disk'] = mnd_disk.std()
         stats['d_min_divided_by_d_max_disk'] = d_min_divided_by_d_max.mean()
@@ -352,8 +361,8 @@ def compute_stats_all_arenas(data_per_arena, stats_per_arena, config, output_pat
         max_mnd_annulus = mean_neighbors_dist(np.array([ref_annulus_xy[:,0]]), np.array([ref_annulus_xy[:,1]]), config['commsRadius'])[0]
         min_mnd_annulus = mean_neighbors_dist(np.array([ref_worse_annulus_xy[:,0]]), np.array([ref_worse_annulus_xy[:,1]]), config['commsRadius'])[0] - 2.0
         mnd_annulus = (stats_per_arena['annulus']['mean_neighbors_dist'][:,-1] - min_mnd_annulus) / (max_mnd_annulus - min_mnd_annulus)
-        d_min_divided_by_d_max = get_d_min_divided_by_d_max(np.array([ref_annulus_xy[:,0]]), np.array([ref_annulus_xy[:,1]]), config['commsRadius'])
-        d_min_divided_by_fop = get_d_min_divided_by_fop(np.array([ref_annulus_xy[:,0]]), np.array([ref_annulus_xy[:,1]]), config['commsRadius'])
+        d_min_divided_by_d_max = stats_per_arena['annulus']['d_min_divided_by_d_max']
+        d_min_divided_by_fop = stats_per_arena['annulus']['d_min_divided_by_fop']
         stats['mean_mnd_annulus'] = mnd_annulus.mean()
         stats['std_mnd_annulus'] = mnd_annulus.std()
         stats['d_min_divided_by_d_max_annulus'] = d_min_divided_by_d_max.mean()
