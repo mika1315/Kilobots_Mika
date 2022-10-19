@@ -19,7 +19,7 @@ import copy
 import pickle
 import scipy
 import scipy.spatial
-
+import matplotlib.pyplot as plt
 
 
 def tee(log_filename, *args):
@@ -98,6 +98,7 @@ def get_d_min_divided_by_d_max(xs, ys, fop):
         d[k] = d_k.mean()
     return d
 
+
 def get_d_min_divided_by_fop(xs, ys, fop):
     d = np.zeros(xs.shape[0])
     min_dist = get_min_dist(xs, ys, fop)
@@ -107,6 +108,18 @@ def get_d_min_divided_by_fop(xs, ys, fop):
             d_k[n_k] = d_min / fop
         d[k] = d_k.mean()
     return d
+
+
+def get_best_and_worse_d_min_divided_by_d_max(best_xs, best_ys, worse_xs, worse_ys, fop):
+    best_d = get_d_min_divided_by_d_max(best_xs, best_ys, fop)
+    worse_d = get_d_min_divided_by_d_max(worse_xs, worse_ys, fop)
+    return (best_d, worse_d)
+
+def get_best_and_worse_d_min_divided_by_fop(best_xs, best_ys, worse_xs, worse_ys, fop):
+    best_d = get_d_min_divided_by_fop(best_xs, best_ys, fop)
+    worse_d = get_d_min_divided_by_fop(worse_xs, worse_ys, fop)
+    return (best_d, worse_d)
+
 
 ref_disk_xy = np.array(
        [[136.10451306,   0.67873303],
@@ -338,6 +351,47 @@ def compute_stats_per_arena(data, config, output_path, log_filename):
     all_stats['d_min_divided_by_fop'] = np.array([ get_d_min_divided_by_fop(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
     return all_stats
 
+def plot_metrics(stats_per_arena, config):
+    if 'disk' in stats_per_arena:
+        d_min_divided_by_d_max_disk = stats_per_arena['disk']['d_min_divided_by_d_max']
+        d_min_divided_by_fop_disk = stats_per_arena['disk']['d_min_divided_by_fop']
+        d_min_divided_by_d_max_mean_disk = np.mean(d_min_divided_by_d_max_disk, axis=0)
+        d_min_divided_by_fop_mean_disk = np.mean(d_min_divided_by_fop_disk, axis=0)
+
+        (best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max) = get_best_and_worse_d_min_divided_by_d_max(np.array([ref_disk_xy[:,0]]), np.array([ref_disk_xy[:,1]]), 
+            np.array([ref_worse_disk_xy[:,0]]), np.array([ref_worse_disk_xy[:,1]]), config['commsRadius'])
+        (best_d_min_divided_by_fop, worse_d_min_divided_by_fop) = get_best_and_worse_d_min_divided_by_fop(np.array([ref_disk_xy[:,0]]), np.array([ref_disk_xy[:,1]]), 
+            np.array([ref_worse_disk_xy[:,0]]), np.array([ref_worse_disk_xy[:,1]]), config['commsRadius'])
+
+        fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 4))
+        ax.fill_between(range(len(d_min_divided_by_d_max_mean_disk)), best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
+        ax.fill_between(range(len(d_min_divided_by_d_max_mean_disk)), best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
+        plt.xlabel('t')
+        ax.plot(range(len(d_min_divided_by_d_max_mean_disk)), d_min_divided_by_d_max_mean_disk, label='d_min / d_max')
+        ax.plot(range(len(d_min_divided_by_fop_mean_disk)), d_min_divided_by_fop_mean_disk, label='d_min / fop')
+        plt.legend()
+        plt.savefig('metrics_disk.png')
+
+
+    if 'annulus' in stats_per_arena:
+        d_min_divided_by_d_max_annulus = stats_per_arena['annulus']['d_min_divided_by_d_max']
+        d_min_divided_by_fop_annulus = stats_per_arena['annulus']['d_min_divided_by_fop']
+        d_min_divided_by_d_max_mean_annulus = np.mean(d_min_divided_by_d_max_annulus, axis=0)
+        d_min_divided_by_fop_mean_annulus = np.mean(d_min_divided_by_fop_annulus, axis=0)
+
+        (best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max) = get_best_and_worse_d_min_divided_by_d_max(np.array([ref_annulus_xy[:,0]]), np.array([ref_annulus_xy[:,1]]), 
+            np.array([ref_worse_annulus_xy[:,0]]), np.array([ref_worse_annulus_xy[:,1]]), config['commsRadius'])
+        (best_d_min_divided_by_fop, worse_d_min_divided_by_fop) = get_best_and_worse_d_min_divided_by_fop(np.array([ref_annulus_xy[:,0]]), np.array([ref_annulus_xy[:,1]]), 
+            np.array([ref_worse_annulus_xy[:,0]]), np.array([ref_worse_annulus_xy[:,1]]), config['commsRadius'])
+
+        fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 4))
+        ax.fill_between(range(len(d_min_divided_by_d_max_mean_annulus)), best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
+        ax.fill_between(range(len(d_min_divided_by_d_max_mean_annulus)), best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
+        plt.xlabel('t')
+        ax.plot(range(len(d_min_divided_by_d_max_mean_annulus)), d_min_divided_by_d_max_mean_annulus, label='d_min / d_max')
+        ax.plot(range(len(d_min_divided_by_fop_mean_annulus)), d_min_divided_by_fop_mean_annulus, label='d_min / fop')
+        plt.legend()
+        plt.savefig('metrics_annulus.png')
 
 def compute_stats_all_arenas(data_per_arena, stats_per_arena, config, output_path):
     stats = {}
@@ -442,6 +496,7 @@ if __name__ == "__main__":
             data_per_arena[expe_name] = pool.starmap(launch_kilombo, params)
             stats_per_arena[expe_name] = compute_stats_per_arena(data_per_arena[expe_name], base_config, output_path_full, log_filename)
 
+    plot_metrics(stats_per_arena, base_config)
     stats = compute_stats_all_arenas(data_per_arena, stats_per_arena, base_config, output_path)
     tee(log_filename, f"\n##############\n")
     tee(log_filename, "Final stats: ", stats)
