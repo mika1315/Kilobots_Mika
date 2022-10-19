@@ -270,9 +270,12 @@ class KilomboLauncher:
         self.x_position = np.array([get_vals(data[x], "x_position") for x in range(nb_entries)])
         self.y_position = np.array([get_vals(data[x], "y_position") for x in range(nb_entries)])
 
+        self.kilo_ticks = np.array([get_state(data[x], "t") for x in range(nb_entries)]).T[0]
+
         res = {}
         res["x_position"] = self.x_position
         res["y_position"] = self.y_position
+        res["kilo_ticks"] = self.kilo_ticks
         return res
 
 
@@ -351,7 +354,10 @@ def compute_stats_per_arena(data, config, output_path, log_filename):
     all_stats['d_min_divided_by_fop'] = np.array([ get_d_min_divided_by_fop(r['x_position'], r['y_position'], config['commsRadius']) for r in data])
     return all_stats
 
-def plot_metrics(stats_per_arena, config):
+def plot_metrics(stats_per_arena, config, data_per_arena):
+    for expe_name in data_per_arena.keys():
+        kilo_ticks = data_per_arena[expe_name][0]['kilo_ticks']
+
     if 'disk' in stats_per_arena:
         d_min_divided_by_d_max_disk = stats_per_arena['disk']['d_min_divided_by_d_max']
         d_min_divided_by_fop_disk = stats_per_arena['disk']['d_min_divided_by_fop']
@@ -364,11 +370,11 @@ def plot_metrics(stats_per_arena, config):
             np.array([ref_worse_disk_xy[:,0]]), np.array([ref_worse_disk_xy[:,1]]), config['commsRadius'])
 
         fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 4))
-        ax.fill_between(range(len(d_min_divided_by_d_max_mean_disk)), best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
-        ax.fill_between(range(len(d_min_divided_by_d_max_mean_disk)), best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
+        ax.fill_between(kilo_ticks/32, best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
+        ax.fill_between(kilo_ticks/32, best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
         plt.xlabel('t')
-        ax.plot(range(len(d_min_divided_by_d_max_mean_disk)), d_min_divided_by_d_max_mean_disk, label='d_min / d_max')
-        ax.plot(range(len(d_min_divided_by_fop_mean_disk)), d_min_divided_by_fop_mean_disk, label='d_min / fop')
+        ax.plot(kilo_ticks/32, d_min_divided_by_d_max_mean_disk, label='d_min / d_max')
+        ax.plot(kilo_ticks/32, d_min_divided_by_fop_mean_disk, label='d_min / fop')
         plt.legend()
         plt.savefig('metrics_disk.png')
 
@@ -385,11 +391,11 @@ def plot_metrics(stats_per_arena, config):
             np.array([ref_worse_annulus_xy[:,0]]), np.array([ref_worse_annulus_xy[:,1]]), config['commsRadius'])
 
         fig, ax = plt.subplots(1, 1, sharex=True, figsize=(8, 4))
-        ax.fill_between(range(len(d_min_divided_by_d_max_mean_annulus)), best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
-        ax.fill_between(range(len(d_min_divided_by_d_max_mean_annulus)), best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
+        ax.fill_between(kilo_ticks/32, best_d_min_divided_by_d_max, worse_d_min_divided_by_d_max, alpha=0.3)
+        ax.fill_between(kilo_ticks/32, best_d_min_divided_by_fop, worse_d_min_divided_by_fop, alpha=0.3)
         plt.xlabel('t')
-        ax.plot(range(len(d_min_divided_by_d_max_mean_annulus)), d_min_divided_by_d_max_mean_annulus, label='d_min / d_max')
-        ax.plot(range(len(d_min_divided_by_fop_mean_annulus)), d_min_divided_by_fop_mean_annulus, label='d_min / fop')
+        ax.plot(kilo_ticks/32, d_min_divided_by_d_max_mean_annulus, label='d_min / d_max')
+        ax.plot(kilo_ticks/32, d_min_divided_by_fop_mean_annulus, label='d_min / fop')
         plt.legend()
         plt.savefig('metrics_annulus.png')
 
@@ -496,7 +502,7 @@ if __name__ == "__main__":
             data_per_arena[expe_name] = pool.starmap(launch_kilombo, params)
             stats_per_arena[expe_name] = compute_stats_per_arena(data_per_arena[expe_name], base_config, output_path_full, log_filename)
 
-    plot_metrics(stats_per_arena, base_config)
+    plot_metrics(stats_per_arena, base_config, data_per_arena)
     stats = compute_stats_all_arenas(data_per_arena, stats_per_arena, base_config, output_path)
     tee(log_filename, f"\n##############\n")
     tee(log_filename, "Final stats: ", stats)
