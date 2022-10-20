@@ -20,6 +20,26 @@ make clean && make -j 20
 ./runKilombo.py -o results -c conf/base.yaml
 ```
 
+## About dispersion algo
+It's based on run and tumble algorithm.
+
+### duration for run state
+run_time = $\alpha = \gamma + \phi * \sigma$
+
+ - $\gamma$ : offset (or regularization term)
+
+ - $\phi$ : frustration
+
+$\phi$ = 1 - d_min / d_optim
+- d_min : the distance to the neighbor that is the closest
+- d_optim : the ideal distance between one and the other neighbors (it's difficult to know it)
+
+ - $\sigma$ : scaling
+
+### duration for tumble state
+tumble_time = base_tumble_time +/- N(0, 1)
+
+
 ## About stats
 
 Hi! :)
