@@ -1,3 +1,27 @@
+## How to execute the program
+
+### For dispersion simulations
+```
+make clean; make
+./dispersion
+```
+
+### For the experiment with robots
+```
+make clean; make hex 
+```
+select  `dispersion.hex` on the Kilogui software
+
+### To launch dispersion simulations + compute stats on the results
+
+```
+mkdir results
+make clean && make -j 20
+./runKilombo.py -o results -c conf/base.yaml
+```
+
+## About stats
+
 Hi! :)
 
 I copy-pasted some files from the limmsswarm git repo to launch experiments with your code, and compute dispersion stats based on the results of several runs.
