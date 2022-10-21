@@ -24,23 +24,57 @@ make clean && make -j 20
 It's based on run and tumble algorithm.
 
 ### duration for run state
-run_time = $\alpha = \gamma + \phi * \sigma$
+formula : run_time = $\alpha = \gamma + \phi * \sigma$
+
+(Pmove = $\alpha$)
+
 
  - $\gamma$ : offset (or regularization term)
+ 
+   - if $\gamma >= 0, \gamma = 0$ the prob to move when there is no one around
+ 
+   - if $\gamma < 0$, $\gamma$ is a regularization term to dampen the effect of frustration
 
  - $\phi$ : frustration
 
-$\phi$ = 1 - d_min / d_optim
+   $\phi$ = 1 - d_min / d_optim
 - d_min : the distance to the neighbor that is the closest
-- d_optim : the ideal distance between one and the other neighbors (it's difficult to know it)
+- d_optim : the ideal distance between one and the other neighbors (It's difficult to find it but the most important thing. You can first start with d_optim = fop (=field of perception = commsRadius))
+
+  - if d_min = d_optim, $\phi = 0$
+
+  - if d_min < d_optim, $\phi > 0$ : frustration
+
+  - if d_min > d_optim, depends whether exploring is wanted or not
 
  - $\sigma$ : scaling
 
+ensure that $\alpha, \gamma, \phi, \sigma$ are real value
+
+- Pmove can be implemented in various fashion
+  - actual prob to move (Pmove = $\alpha$)
+  - duration of running <- Here, this is implemented!
+    - Pmove is fixed
+    - tumble_time is fixed
+    - run_time = $f(\alpha)$ or run_time = $f(\alpha)$ +/- N(0, 1) etc...
+
 ### duration for tumble state
-tumble_time = base_tumble_time +/- N(0, 1)
+formula : tumble_time = base_tumble_time +/- N(0, 1)
 
+## About stats to find "good" d_optim
 
-## About stats
+- d_min / d_max
+  - d_min : the distance to the neighbor that is the closest
+  - d_max : the distance to the neighbor that is the farest away
+  
+ This value should be close to 1 if they disperse well. However, it doesn't work with the ring arena.
+
+- d_min / fop
+  - fop : Field of perception. It is the possible value that could be the distance
+  
+ The higher this value is, the better they disperse, but it can't be 1. 
+
+***
 
 Hi! :)
 
