@@ -74,7 +74,7 @@ formula : tumble_time = base_tumble_time +/- N(0, 1)
   
  This value should be close to 1 if they disperse well. However, it doesn't work with the ring arena.
 
-***
+## (If you want to use Docker)
 
 Hi! :)
 
