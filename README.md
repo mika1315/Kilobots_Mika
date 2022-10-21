@@ -63,16 +63,16 @@ formula : tumble_time = base_tumble_time +/- N(0, 1)
 
 ## About stats to find "good" d_optim
 
-- d_min / d_max
+- d_min / fop
+  - fop : Field of perception. It is the possible value that could be the distance
+  
+ The higher this value is, the better they disperse, but it's always below 1. 
+ 
+ - d_min / d_max
   - d_min : the distance to the neighbor that is the closest
   - d_max : the distance to the neighbor that is the farest away
   
  This value should be close to 1 if they disperse well. However, it doesn't work with the ring arena.
-
-- d_min / fop
-  - fop : Field of perception. It is the possible value that could be the distance
-  
- The higher this value is, the better they disperse, but it can't be 1. 
 
 ***
 
